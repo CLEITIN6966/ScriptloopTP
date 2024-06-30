@@ -1,102 +1,55 @@
--- Verifica se o jogador está em um dispositivo mobile
-local isMobile = game:GetService("UserInputService").TouchEnabled
-
--- Criar a GUI
+-- Crie uma GUI flutuante
 local gui = Instance.new("ScreenGui")
-gui.Name = "PlayerTeleportGUI"
-gui.IgnoreGuiInset = true  -- Ignora margens de GUI (importante para mobile)
-gui.Parent = game.Players.LocalPlayer.PlayerGui
+gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Estilo da GUI
+gui.Name = "TeleportGUI"
+gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 140)  -- Aumentado um pouco para acomodar o campo de texto
-frame.Position = UDim2.new(0.5, -100, 0.5, -70)
-frame.BackgroundColor3 = Color3.new(1, 1, 1)
-frame.BorderSizePixel = 2
+frame.Parent = gui
+frame.Size = UDim2.new(0, 150, 0, 100)
+frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+frame.Position = UDim2.new(0.5, -75, 0.5, -50)
+frame.AnchorPoint = Vector2.new(0.5, 0.5)
+frame.Draggable = true  -- Permitir arrastar a GUI
 
-local title = Instance.new("TextLabel")
-title.Text = "Player Teleport GUI"
-title.Size = UDim2.new(1, 0, 0, 20)
-title.Position = UDim2.new(0, 0, 0, 0)
-title.TextColor3 = Color3.new(0, 0, 0)
-title.Parent = frame
+-- Texto de créditos
+local credits = Instance.new("TextLabel")
+credits.Parent = frame
+credits.Size = UDim2.new(1, 0, 0, 20)
+credits.Position = UDim2.new(0, 0, 0, 0)
+credits.BackgroundTransparency = 1
+credits.TextColor3 = Color3.fromRGB(255, 255, 255)
+credits.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+credits.TextStrokeTransparency = 0.5
+credits.TextSize = 14
+credits.Font = Enum.Font.SourceSansBold
+credits.Text = "Créditos: CLEITI6966"
 
-local minimizeButton = Instance.new("TextButton")
-minimizeButton.Text = "-"
-minimizeButton.Size = UDim2.new(0, 20, 0, 20)
-minimizeButton.Position = UDim2.new(1, -20, 0, 0)
-minimizeButton.Parent = title
-
-local nameLabel = Instance.new("TextLabel")
-nameLabel.Text = "Digite o nome do jogador:"
-nameLabel.Size = UDim2.new(1, 0, 0, 20)
-nameLabel.Position = UDim2.new(0, 10, 0, 30)
-nameLabel.TextColor3 = Color3.new(0, 0, 0)
-nameLabel.Parent = frame
-
-local nameInput = Instance.new("TextBox")
-nameInput.PlaceholderText = "Digite aqui"
-nameInput.Size = UDim2.new(1, -20, 0, 30)
-nameInput.Position = UDim2.new(0, 10, 0, 60)
-nameInput.TextColor3 = Color3.new(0, 0, 0)
-nameInput.Parent = frame
-
-local teleportButton = Instance.new("TextButton")
-teleportButton.Text = "Teleportar Jogador"
-teleportButton.Size = UDim2.new(0, 150, 0, 30)
-teleportButton.Position = UDim2.new(0.5, -75, 0, 100)
-teleportButton.Parent = frame
-
-local function findPlayerByName(name)
-    name = name:lower()
-    for _, player in ipairs(game.Players:GetPlayers()) do
-        if player.Name:lower():match(name) then
-            return player
+-- Função de teleportar em loop
+local function teleportLoop(playerName)
+    local targetPlayer = game.Players:FindFirstChild(playerName)
+    if targetPlayer then
+        for i = 1, 10 do
+            game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(targetPlayer.Character.PrimaryPart.CFrame)
+            wait(0.69)
         end
-    end
-    return nil
-end
-
-teleportButton.MouseButton1Click:Connect(function()
-    local playerName = nameInput.Text
-    local player = findPlayerByName(playerName)
-    if player then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
     else
-        print("Jogador não encontrado.")
+        warn("Jogador não encontrado!")
     end
-end)
-
--- Implementar função de arrastar para mobile
-if isMobile then
-    local touchGui = gui:Clone()
-    touchGui.Parent = game.Players.LocalPlayer.PlayerGui
-    touchGui.Enabled = true  -- Garantir que a GUI esteja visível
-
-    local touchFrame = frame:Clone()
-    touchFrame.Parent = touchGui
-
-    local touchStartPos = nil
-    local dragOffset = nil
-
-    local function onTouchStart(touchPosition)
-        touchStartPos = touchPosition.Position
-        dragOffset = touchFrame.Position - UDim2.new(0, touchStartPos.X, 0, touchStartPos.Y)
-    end
-
-    local function onTouchMove(touchPosition)
-        local newPos = UDim2.new(0, touchPosition.Position.X, 0, touchPosition.Position.Y) + dragOffset
-        touchFrame.Position = newPos
-    end
-
-    game:GetService("UserInputService").TouchMoved:Connect(function(touch)
-        if touchGui.Enabled and touchFrame then
-            onTouchMove(touch)
-        end
-    end)
-
-    game:GetService("UserInputService").TouchStarted:Connect(function(touch)
-        if touchGui.Enabled and touchFrame then
-            onTouchStart(touch)
-        end
-    end)
 end
+
+-- Criar um botão para iniciar o teleport
+local teleportButton = Instance.new("TextButton")
+teleportButton.Parent = frame
+teleportButton.Size = UDim2.new(1, -10, 0, 30)
+teleportButton.Position = UDim2.new(0, 5, 0, 40)
+teleportButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
+teleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+teleportButton.TextSize = 18
+teleportButton.Font = Enum.Font.SourceSansBold
+teleportButton.Text = "Teleportar"
+teleportButton.MouseButton1Click:Connect(function()
+    teleportLoop("NomeParcial") -- Substitua "NomeParcial" pelo nome desejado ou use uma entrada dinâmica
+end)
